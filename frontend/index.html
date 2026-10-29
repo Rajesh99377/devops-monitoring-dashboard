@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Service Monitoring</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        header {
+            padding: 24px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        header p {
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .value {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .up {
+            color: #4ade80;
+        }
+
+        .down {
+            color: #f87171;
+        }
+
+        button {
+            margin-top: 22px;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 8px;
+            background: #38bdf8;
+            color: #082f49;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #message {
+            margin-top: 16px;
+            color: #94a3b8;
+        }
+
+        footer {
+            margin-top: 35px;
+            color: #64748b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>DevOps Monitoring Dashboard</h1>
+        <p>Application health and service status</p>
+    </header>
+
+    <main>
+        <section class="summary">
+            <article class="card">
+                <h2>Backend API</h2>
+                <div id="backend-status" class="value">Checking...</div>
+            </article>
+
+            <article class="card">
+                <h2>Application</h2>
+                <div class="value">Monitoring Dashboard</div>
+            </article>
+
+            <article class="card">
+                <h2>Last Health Check (UTC)</h2>
+                <div id="last-check" class="value">Not checked</div>
+            </article>
+        </section>
+
+        <button id="refresh-button" onclick="checkHealth()">
+            Refresh Health Status
+        </button>
+
+        <p id="message" role="status">Connecting to backend...</p>
+
+        <footer>
+            Dynamic DevOps Project · Built with HTML, CSS, JavaScript and Flask
+        </footer>
+    </main>
+
+    <script>
+        async function checkHealth() {
+            const statusElement = document.getElementById("backend-status");
+            const timeElement = document.getElementById("last-check");
+            const messageElement = document.getElementById("message");
+
+            statusElement.textContent = "Checking...";
+            statusElement.className = "value";
+            messageElement.textContent = "Checking backend health...";
+
+            try {
+                const response = await fetch("/health");
+
+                if (!response.ok) {
+                    throw new Error("Backend returned HTTP " + response.status);
+                }
+
+                const data = await response.json();
+
+                statusElement.textContent = data.status;
+                statusElement.className =
+                    "value " + (data.status === "UP" ? "up" : "down");
+
+                timeElement.textContent =
+                    new Date(data.timestamp).toLocaleTimeString("en-GB", {
+                        timeZone: "UTC",
+                        hour12: false
+                    }) + " UTC";
+
+                messageElement.textContent = "Health check completed successfully.";
+            } catch (error) {
+                statusElement.textContent = "DOWN";
+                statusElement.className = "value down";
+                timeElement.textContent = "Unavailable";
+                messageElement.textContent =
+                    "Unable to reach backend. Check whether Flask is running.";
+            }
+        }
+
+        checkHealth();
+    </script>
+</body>
+</html>
